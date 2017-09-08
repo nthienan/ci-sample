@@ -37,6 +37,10 @@ dependencies {
     testCompile "org.springframework.boot:spring-boot-starter-test"
 }
 
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+}
+
 jar {
     baseName = 'ci-sample'
     version = "${projectVersion}"
@@ -44,6 +48,7 @@ jar {
         attributes 'Main-Class': 'com.tma.ci4tma.Application'
     }
 }
+jar.dependsOn(sourceJar)
 
 sonarqube {
     properties {
@@ -67,10 +72,7 @@ artifactory {
         }
     }
 }
-
-task sourceJar(type: Jar) {
-    from sourceSets.main.allJava
-}
+artifactoryPublish.dependsOn(build)
 
 publishing.publications {
     mavenJava(MavenPublication) {
