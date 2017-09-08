@@ -14,6 +14,7 @@ buildscript {
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
         classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:${sonarqubeGradleVersion}"
+        classpath "org.jfrog.buildinfo:build-info-extractor-gradle:latest.release"
     }
 }
 
@@ -22,11 +23,8 @@ apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
 apply plugin: "org.sonarqube"
-
-jar {
-    baseName = 'ci-sample'
-    version = "${projectVersion}"
-}
+apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.artifactory'
 
 repositories {
     maven {
@@ -37,4 +35,42 @@ repositories {
 dependencies {
     compile "org.springframework.boot:spring-boot-starter-web"
     testCompile "org.springframework.boot:spring-boot-starter-test"
+}
+
+jar {
+    baseName = 'ci-sample'
+    version = "${projectVersion}"
+}
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+}
+
+artifactory {
+    publish {
+        contextUrl = "$project.properties.artifactServer/"
+        repository {
+            repoKey = "snapshot-local"
+            username = "admin"
+            password = "123456x@X"
+        }
+        defaults {
+            publications('mavenJava')
+            publishArtifacts = true
+        }
+    }
+}
+
+publishing.publications {
+    mavenJava(MavenPublication) {
+        groupId 'com.tma.ci4tma'
+        artifactId 'ci-sample'
+        version projectVersion
+
+        from components.java
+
+        artifact sourceJar {
+            classifier "sources"
+        }
+    }
 }

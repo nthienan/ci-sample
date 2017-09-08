@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package hello;
+package com.tma.ci4tma;
 
 import static org.junit.Assert.assertEquals;
 
