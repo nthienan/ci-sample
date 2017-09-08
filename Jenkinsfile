@@ -14,7 +14,9 @@ pipeline {
                 }
             }
             steps {
-                sh 'gradle clean build'
+                withSonarQubeEnv('SonarQube') {
+                    sh 'gradle --info clean build sonarqube'
+                }
             }
             post {
                 always {
@@ -22,20 +24,8 @@ pipeline {
                 }
                 success {
                     archiveArtifacts 'build/libs/*.jar'
+                    sh 'gradle artifactoryPublish'
                     echo "Built successfully"
-                }
-            }
-        }
-        stage('Static Analysis') {
-            agent {
-                docker {
-                    image 'docker-registry:5000/gradle'
-                    label 'docker && ci4tma'
-                }
-            }
-            steps {
-                withSonarQubeEnv('SonarQube') {
-                    sh 'gradle --info sonarqube'
                 }
             }
         }
