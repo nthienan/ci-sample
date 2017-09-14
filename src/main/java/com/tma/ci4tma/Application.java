@@ -15,6 +15,11 @@ public class Application {
         return "Hello Team ! How are you?";
     }
 
+    @RequestMapping("/{name}")
+    public String hello(@PathVariable String name) {
+        return "Hello Team " + name;
+    }
+
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
     }
