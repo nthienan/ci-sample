@@ -15,6 +15,11 @@ public class Application {
         return "Hello Team ! How are you?";
     }
 
+    @RequestMapping("/helo123")
+    public String home1() {
+        return "Hello Team ! How are you?";
+    }
+
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
     }
