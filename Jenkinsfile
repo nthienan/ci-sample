@@ -2,7 +2,7 @@ pipeline {
     agent none
 
     environment {
-        REPO_URL = "http://192.168.88.14:8081/artifactory"
+        REPO_URL = "http://192.168.88.12:8081/artifactory"
     }
 
     stages {
