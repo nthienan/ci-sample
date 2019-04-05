@@ -23,7 +23,7 @@ pipeline {
         }
       }
     }
-    stage('Package') {
+    stage('Containerize') {
       steps {
         container('docker') {
           sh """
