@@ -1,97 +1,60 @@
 pipeline {
-    agent none
-
-    environment {
-        REPO_URL = "http://192.168.88.12:8081/artifactory"
+  agent {
+    kubernetes {
+      label 'ci-sample'
+      yamlFile 'builder-pod.yaml'
     }
-
-    stages {
-        stage('Build') {
-            agent {
-                docker {
-                    image 'docker-registry:5000/gradle'
-                    label 'docker && ci4tma'
-                }
-            }
-            steps {
-                withSonarQubeEnv('SonarQube') {
-                    sh 'gradle --info clean build sonarqube'
-                }
-            }
-            post {
-                always {
-                    junit 'build/test-results/**/TEST-*.xml'
-                }
-                success {
-                    archiveArtifacts 'build/libs/*.jar'
-                    sh 'gradle artifactoryPublish'
-                    echo "Built successfully"
-                }
-            }
+  }
+  environment {
+    ROLE_ID = "94cf2daf-77a5-d475-8475-713ee90e31e3"
+  }
+  stages {
+    stage('Build') {
+      steps {
+        container('gradle') {
+          sh """
+            gradle clean build
+          """
         }
-        stage('Containerize') {
-            agent { label 'docker && ci4tma' }
-            steps {
-                echo 'Containerize'
-                script {
-                    def image = docker.build("docker-registry:5000/ci-sample:${env.BRANCH_NAME}-${env.BUILD_NUMBER}")
-                    image.push "${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
-                    image.push "${env.BRANCH_NAME}-latest"
-                }
-            }
-        }
-        stage('Deployment') {
-            agent { label 'docker && ci4tma' }
-            steps {
-                echo 'Promotion'
-                timeout(time:30, unit:'MINUTES') {
-                    emailext (
-                        subject: "[CI4TMA] Waiting approval for ${env.JOB_NAME} - build #${env.BUILD_NUMBER}",
-                        body: """
-                            Hi all,<br/><br/>
-                            <p>${env.JOB_NAME} - build #${env.BUILD_NUMBER} is waiting your approval for deployment</p>
-                            <p>Please go to: <a href='${env.BUILD_URL}'>${env.JOB_NAME} - build #${env.BUILD_NUMBER}</a> to approve</p><br/>
-                            Thanks,<br/>
-                            Build Team.
-                        """,
-                        to: "nthienan@tma.com.vn",
-                        mimeType: "text/html"
-                    )
-                    input message:'Approve Deployment?'
-                }
-                sh "docker service update --image docker-registry:5000/ci-sample:${env.BRANCH_NAME}-${env.BUILD_NUMBER} ci-production"
-            }
-        }
-    }
-    post {
+      }
+      post {
         success {
-            emailext (
-                subject: "[CI4TMA] ${env.JOB_NAME} - build #${env.BUILD_NUMBER}: SUCCESSFUL!",
-                body: """
-                    Dear All,<br/><br/>
-                    <p>${env.JOB_NAME} - build #${env.BUILD_NUMBER}: SUCCESSFUL:</p>
-                    <p>You can check console output at: <a href='${env.BUILD_URL}'>${env.JOB_NAME} - build #${env.BUILD_NUMBER}</a></p><br/>
-                    Thanks,<br/>
-                    Build Team.
-                """,
-                to: "nthienan@tma.com.vn",
-                mimeType: "text/html"
-            )
+          stash includes: 'build/libs/ci-sample*.jar', name: 'app'
         }
-        failure {
-            emailext (
-                subject: "[CI4TMA] ${env.JOB_NAME} - Build #${env.BUILD_NUMBER}: FAILED!",
-                body: """
-                    Dear All,<br/><br/>
-                    <p>${env.JOB_NAME} - build #${env.BUILD_NUMBER}: FAILED:</p>
-                    <p>Please Check console output at: <a href='${env.BUILD_URL}'>${env.JOB_NAME} - build #${env.BUILD_NUMBER}</a></p><br/>
-                    Thanks,<br/>
-                    Build Team.
-                """,
-                to: "nthienan@tma.com.vn",
-                mimeType: "text/html",
-                attachLog: true
-            )
-        }
+      }
     }
+    stage('Package') {
+      steps {
+        container('docker') {
+          sh """
+            docker build -t nthienan/ci-sample .
+          """
+        }
+      }
+    }
+    stage('Deploy') {
+      steps {
+        container('vault') {
+          withCredentials([string(credentialsId: 'jenkins_vault_token', variable: 'VAULT_TOKEN')]) {
+            sh """
+              set +x
+              echo $HOSTNAME
+              export VAULT_ADDR=http://vault.default.svc.cluster.local
+              SECRET_ID=`vault write -field=secret_id -f auth/approle/role/team-a/secret-id`
+              VAULT_TOKEN=`vault write -field=token auth/approle/login role_id=$ROLE_ID secret_id=\$SECRET_ID`
+              vault kv get -field=username kv/team-a/mongodb
+              USERNAME=`vault kv get -field=username kv/team-a/mongodb`
+              PASSWORD=`vault kv get -field=password kv/team-a/mongodb`
+              echo -n "username=\$USERNAME\npassword=\$PASSWORD" > config.properties
+            """
+          }
+        }
+      }
+      post {
+        success {
+          archiveArtifacts artifacts: 'config.properties'
+        }
+      }
+    }
+  }
 }

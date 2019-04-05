@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ci-sample-slave
+  labels:
+    app: jenkins
+    role: slave
+    component: ci-cd
+spec:
+  containers:
+  - name: jnlp
+    image: jenkins/jnlp-slave:3.27-1-alpine
+    env:
+    - name: JENKINS_URL
+      value: "http://jenkins.default.svc.cluster.local"
+  - name: docker-18-05
+    image: docker:18.05-dind
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - name: dind-storage
+      mountPath: /var/lib/docker
+  - name: vault
+    image: vault:1.1.0
+    command: [ "/bin/sh", "-c", "--" ]
+    args: [ "while true; do echo Running && sleep 30; done;" ]
+  - name: gradle
+    image: gradle:5.3.1-jdk8
+    command: [ "/bin/sh", "-c", "--" ]
+    args: [ "while true; do echo Running && sleep 30; done;" ]
+  volumes:
+  - name: dind-storage
+    emptyDir: {}
