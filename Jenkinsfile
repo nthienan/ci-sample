@@ -9,6 +9,13 @@ pipeline {
     ROLE_ID = "94cf2daf-77a5-d475-8475-713ee90e31e3"
   }
   stages {
+    stage('Sleep') {
+      steps {
+        container('jnlp') {
+          sleep 100
+        }
+      }
+    }
     stage('Build') {
       steps {
         container('gradle') {
