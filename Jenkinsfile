@@ -20,7 +20,6 @@ pipeline {
       post {
         success {
           sh """
-            ls -la build
             ls -la build/libs
           """
           stash includes: 'build/libs/ci-sample*.jar', name: 'app'
