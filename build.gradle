@@ -1,8 +1,9 @@
 group "com.nthienan.ci.sample"
+archivesBaseName = 'ci-sample'
+version = '1.0.0-SNAPSHOT'
 
 buildscript {
     ext {
-        projectVersion = "1.0.0-SNAPSHOT"
         springBootVersion = '2.1.4.RELEASE'
         sonarqubeGradleVersion = '2.5'
     }
@@ -38,8 +39,6 @@ task sourceJar(type: Jar) {
 }
 
 jar {
-    baseName = 'ci-sample'
-    version = "${projectVersion}"
     manifest {
         attributes 'Main-Class': 'com.nthienan.ci.sample.Application'
     }
