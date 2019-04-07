@@ -38,8 +38,8 @@ task sourceJar(type: Jar) {
 }
 
 jar {
-    archivesBaseName = 'ci-sample'
-    version = "${projectVersion}"
+    archivesBaseName = "ci-sample"
+    archiveVersion = "${projectVersion}"
     manifest {
         attributes 'Main-Class': 'com.nthienan.ci.sample.Application'
     }

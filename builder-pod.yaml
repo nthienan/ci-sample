@@ -13,7 +13,7 @@ spec:
     env:
     - name: JENKINS_URL
       value: "http://jenkins.default.svc.cluster.local"
-  - name: docker-18-05
+  - name: docker
     image: docker:18.05-dind
     securityContext:
       privileged: true
