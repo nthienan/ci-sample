@@ -31,3 +31,5 @@ spec:
   volumes:
   - name: dind-storage
     emptyDir: {}
+  securityContext:
+    runAsUser: 0
