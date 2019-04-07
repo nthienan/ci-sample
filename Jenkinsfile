@@ -30,6 +30,7 @@ pipeline {
     stage('Containerize') {
       steps {
         container('docker') {
+          unstash 'app'
           sh """
             docker build -t nthienan/ci-sample .
           """
