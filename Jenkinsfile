@@ -61,6 +61,18 @@ pipeline {
             """
           }
         }
+        container('alpine') {
+          withCredentials([usernamePassword(credentialsId: 'ssh_depoyment_server', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+            script {
+              def aws_server = [:]
+              aws_server.name = "aws_server"
+              aws_server.host = "13.251.129.107"
+              aws_server.allowAnyHosts = true
+              remote.user = USERNAME
+              remote.password = PASSWORD
+              sshCommand remote: aws_server, command: 'echo \$HOSTNAME'
+          }
+        }
       }
       post {
         success {
