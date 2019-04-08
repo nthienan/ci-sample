@@ -54,6 +54,8 @@ pipeline {
               PASSWORD=`vault kv get -field=password kv/team-a/mongodb`
 
               config_file="./application.properties"
+              ls -la
+              pwd
               cp src/main/resources/application.properties.template \$config_file
               sed -i -e 's,MONGO_HOST,'13.251.129.107',g' \$config_file
               sed -i -e 's,MONGO_USER,'\$USERNAME',g' \$config_file
