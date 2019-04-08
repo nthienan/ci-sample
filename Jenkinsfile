@@ -54,8 +54,6 @@ pipeline {
               PASSWORD=`vault kv get -field=password kv/team-a/mongodb`
 
               config_file="./application.properties"
-              ls -la
-              pwd
               cp src/main/resources/application.properties.template \$config_file
               sed -i -e 's,MONGO_HOST,'13.251.129.107',g' \$config_file
               sed -i -e 's,MONGO_USER,'\$USERNAME',g' \$config_file
@@ -70,8 +68,8 @@ pipeline {
               aws_server.name = "aws_server"
               aws_server.host = "13.251.129.107"
               aws_server.allowAnyHosts = true
-              remote.user = USERNAME
-              remote.password = PASSWORD
+              aws_server.user = USERNAME
+              aws_server.password = PASSWORD
               sshCommand remote: aws_server, command: 'echo \$HOSTNAME'
             }
           }
