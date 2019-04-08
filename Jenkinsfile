@@ -60,7 +60,7 @@ pipeline {
               sed -i -e 's,MONGO_PASSWORD,'\$PASSWORD',g' \$config_file
             """
           }
-          stash includes: './application.properties', name: 'config'
+          stash includes: 'application.properties', name: 'config'
         }
         container('alpine') {
           unstash 'config'
@@ -74,7 +74,7 @@ pipeline {
               aws_server.password = PASSWORD
               sshRemove remote: aws_server, path: "./application.properties", failOnError: false
               sshPut remote: aws_server, from: './application.properties', into: '/home/ubuntu/application.properties'
-              sshCommand remote: aws_server, command: "docker rm -f ci-sample || true && docker run -it --name ci-sample -p 80:8080 -v /home/ubuntu/application.properties:/tmp/application.properties -e OPTS='--spring.config.location=file:/tmp/application.properties' nthienan/ci-sample:${env.BUILD_NUMBER}"
+              sshCommand remote: aws_server, command: "docker rm -f ci-sample || true && docker run -d --name ci-sample -p 80:8080 -v /home/ubuntu/application.properties:/tmp/application.properties -e OPTS='--spring.config.location=file:/tmp/application.properties' nthienan/ci-sample:${env.BUILD_NUMBER}"
             }
           }
         }
