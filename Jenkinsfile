@@ -13,7 +13,7 @@ pipeline {
       steps {
         container('gradle') {
           sh """
-            gradle clean build
+            gradle clean bootJar
           """
         }
       }
