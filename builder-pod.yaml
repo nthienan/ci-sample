@@ -21,7 +21,7 @@ spec:
     - name: dind-storage
       mountPath: /var/lib/docker
     - name: workspace
-      mountPath: /home/jenkins/workspace
+      mountPath:  /tmp/workspace
   - name: vault
     image: vault:1.1.0
     command: [ "/bin/sh", "-c", "--" ]
@@ -32,7 +32,7 @@ spec:
     args: [ "while true; do echo Running && sleep 30; done;" ]
     volumeMounts:
     - name: workspace
-      mountPath: /home/jenkins/workspace
+      mountPath: /tmp/workspace
   volumes:
   - name: dind-storage
     emptyDir: {}
