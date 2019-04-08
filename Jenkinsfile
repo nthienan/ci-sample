@@ -46,21 +46,25 @@ pipeline {
           withCredentials([string(credentialsId: 'jenkins_vault_token', variable: 'VAULT_TOKEN')]) {
             sh """
               set +x
-              echo $HOSTNAME
-              export VAULT_ADDR=http://vault.default.svc.cluster.local
+              echo "Generating configurations ..."
+              export VAULT_ADDR=http://vault.nthienan.com
               SECRET_ID=`vault write -field=secret_id -f auth/approle/role/team-a/secret-id`
               VAULT_TOKEN=`vault write -field=token auth/approle/login role_id=$ROLE_ID secret_id=\$SECRET_ID`
-              vault kv get -field=username kv/team-a/mongodb
               USERNAME=`vault kv get -field=username kv/team-a/mongodb`
               PASSWORD=`vault kv get -field=password kv/team-a/mongodb`
-              echo -n "username=\$USERNAME\npassword=\$PASSWORD" > config.properties
+
+              config_file="./application.properties"
+              cp src/main/resources/application.properties.template $config_file
+              sed -i -e 's,MONGO_HOST,'13.251.129.107',g' $config_file
+              sed -i -e 's,MONGO_USER,'$USERNAME',g' $config_file
+              sed -i -e 's,MONGO_PASSWORD,'$PASSWORD',g' $config_file
             """
           }
         }
       }
       post {
         success {
-          archiveArtifacts artifacts: 'config.properties'
+          archiveArtifacts artifacts: 'application.properties'
         }
       }
     }
