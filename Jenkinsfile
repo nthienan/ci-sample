@@ -71,6 +71,7 @@ pipeline {
               remote.user = USERNAME
               remote.password = PASSWORD
               sshCommand remote: aws_server, command: 'echo \$HOSTNAME'
+            }
           }
         }
       }
