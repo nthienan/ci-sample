@@ -30,9 +30,13 @@ pipeline {
       steps {
         container('docker') {
           unstash 'app'
-          sh """
-            docker build -t nthienan/ci-sample .
-          """
+          script {
+            def image = docker.build("nthienan/ci-sample-:${env.BUILD_NUMBER}")
+            docker.withRegistry( '', 'nthienan_dockerhub') {
+              image.push "${env.BUILD_NUMBER}"
+              image.push "latest"
+            }
+          }
         }
       }
     }
