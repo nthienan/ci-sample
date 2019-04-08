@@ -31,7 +31,7 @@ pipeline {
         container('docker') {
           unstash 'app'
           script {
-            def image = docker.build("nthienan/ci-sample-:${env.BUILD_NUMBER}")
+            def image = docker.build("nthienan/ci-sample:${env.BUILD_NUMBER}")
             docker.withRegistry( '', 'nthienan_dockerhub') {
               image.push "${env.BUILD_NUMBER}"
               image.push "latest"
