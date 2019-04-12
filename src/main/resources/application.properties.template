@@ -1,6 +1,0 @@
-server.port: 8080
-mongo.host: MONGO_HOST
-mongo.port: 27017
-mongo.username: MONGO_USER
-mongo.password: MONGO_PASSWORD
-mongo.database: blog

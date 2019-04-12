@@ -28,6 +28,7 @@ repositories {
 
 dependencies {
     compile "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
+    compile "org.springframework.vault:spring-vault-core:2.1.2.RELEASE"
     compile "org.mongodb:mongo-java-driver:3.10.1"
 
     testCompile "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
