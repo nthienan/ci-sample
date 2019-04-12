@@ -46,7 +46,7 @@ pipeline {
             script {
               def aws_server = [:]
               aws_server.name = "aws_server"
-              aws_server.host = "13.251.129.107"
+              aws_server.host = "13.250.13.92"
               aws_server.allowAnyHosts = true
               aws_server.user = USERNAME
               aws_server.password = PASSWORD
