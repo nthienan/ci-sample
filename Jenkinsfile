@@ -6,7 +6,7 @@ pipeline {
     }
   }
   environment {
-    ROLE_ID = "94cf2daf-77a5-d475-8475-713ee90e31e3"
+    ROLE_ID = "2ca933d8-5f7b-897e-650e-bcaf4f1e699b"
   }
   stages {
     stage('Build') {
@@ -46,7 +46,7 @@ pipeline {
             script {
               def aws_server = [:]
               aws_server.name = "aws_server"
-              aws_server.host = "13.250.13.92"
+              aws_server.host = "server-1.nthienan.com"
               aws_server.allowAnyHosts = true
               aws_server.user = USERNAME
               aws_server.password = PASSWORD
