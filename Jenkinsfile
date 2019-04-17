@@ -6,7 +6,7 @@ pipeline {
     }
   }
   environment {
-    ROLE_ID = "94cf2daf-77a5-d475-8475-713ee90e31e3"
+    ROLE_ID = "2ca933d8-5f7b-897e-650e-bcaf4f1e699b"
   }
   stages {
     stage('Build') {
@@ -55,7 +55,7 @@ pipeline {
 
               config_file="./application.properties"
               cp src/main/resources/application.properties.template \$config_file
-              sed -i -e 's,MONGO_HOST,'13.251.129.107',g' \$config_file
+              sed -i -e 's,MONGO_HOST,'server-1.nthienan.com',g' \$config_file
               sed -i -e 's,MONGO_USER,'\$USERNAME',g' \$config_file
               sed -i -e 's,MONGO_PASSWORD,'\$PASSWORD',g' \$config_file
             """
@@ -68,7 +68,7 @@ pipeline {
             script {
               def aws_server = [:]
               aws_server.name = "aws_server"
-              aws_server.host = "13.251.129.107"
+              aws_server.host = "server-1.nthienan.com"
               aws_server.allowAnyHosts = true
               aws_server.user = USERNAME
               aws_server.password = PASSWORD
