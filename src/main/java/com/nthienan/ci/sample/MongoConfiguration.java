@@ -60,7 +60,7 @@ public class MongoConfiguration implements InitializingBean {
             Map<String, String> payload = new HashMap<>();
             payload.put("lease_id", leaseId);
             payload.put("increment", leaseDuration);
-            HttpEntity<Map> request = new HttpEntity(payload);
+            HttpEntity<Map> request = new HttpEntity<>(payload);
             ResponseEntity<HashMap> exchange = restOperations
                 .exchange("/sys/leases/renew", HttpMethod.PUT,
                     request,
