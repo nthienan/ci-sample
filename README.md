@@ -1,5 +1,7 @@
 # CI Sample Application
+Scenario 1: Legacy applications that don’t run on Kubernetes
 
+![Legacy applications that don’t run on Kubernetes](docs/scenario-1-vault-static-credential.png)
 ### Configure Vault policies
 
 This guide will walk you through configure Vault policies in order to run this application.
@@ -9,10 +11,15 @@ Login as a user who has proper permissions:
 $ vault login -method=userpass username=nthienan
 Password (will be hidden): <type nthienan's password>
 ```
-AppRole is a secure introduction method to establish machine identity. In AppRole, in order for the application to get a token, it would need to login using a Role ID (which is static, and associated with a policy), and a Secret ID (which is dynamic, one time use, and can only be requested by a previously authenticated user/system.   
+AppRole is a secure introduction method to establish machine identity. In AppRole, in order for the application to get a token, it would need to login using a Role ID (which is static, and associated with a policy), and a Secret ID (which is dynamic, one time use, and can only be requested by a previously authenticated user/system.
 Let's creat necessary policies for team-a:
 ```bash
-$ vault policy write team-a-readonly vault-policies/team-a-readonly.hcl
+$ echo 'path "kv/data/team-a/*" {
+  capabilities = ["read", "list"]
+}
+path "secret/data/team-a/*" {
+  capabilities = ["read", "list"]
+}' | vault policy write team-a-readonly -
 ```
 In this case, tokens assigned to the `team-a-readonly` policy would have permission to read a secret on the `secret/team-a/*` path.
 
@@ -41,7 +48,9 @@ $ vault kv put kv/team-a/mongodb username=mongo_root password=123456
 ```
 Now Jenkins will need permissions to retrieve role's secret-id for our newly created role. Jenkins shouldn’t be able to access the secret itself, list other Secret IDs, or even the Role ID.
 ```bash
-vault policy write jenkins vault-policies/jenkins.hcl
+$ echo 'path "auth/approle/role/team-a/secret-id" {
+  capabilities = ["read","create","update"]
+}' | vault policy write jenkins -
 ```
 And generate a token for Jenkins to login into Vault. This token should have a relatively large TTL, but will have to be rotated
 ```bash
@@ -71,4 +80,4 @@ In this way we’re minimizing attack vectors:
 
 To better illustrate please refer picture below
 
-![ACL strategy](../docs/images/acl-strategy.jpg "ACL strategy")
+![ACL strategy](docs/acl-strategy.jpg "ACL strategy")
