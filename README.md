@@ -1,4 +1,10 @@
-# Sample project for Vault's demo
+# CI Sample Application
+
+Scenario 4: New applications that use dynamic credentials
+
+![New applications that use dynamic credentials](docs/scenario-4-vault-dynamic-credential.png)
+
+### Configure Vault policies
 Follow these steps to configure Vault in order to run the application
 
 - Login to vault with a user has permissions to create roles and policies.   
