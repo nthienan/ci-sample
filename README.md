@@ -44,7 +44,7 @@ Follow these steps to configure Vault in order to run the application
   $ vault write database/roles/ci-sample \
       db_name=mongodb-server-1 \
       creation_statements='{ "db": "admin", "roles": [{ "role": "readWrite" }, {"role": "read", "db": "blog"}] }' \
-      default_ttl="744h" \
+      default_ttl="1h" \
       max_ttl="8760h"
   Success! Data written to: database/roles/ci-sample
   ```
@@ -54,9 +54,9 @@ Follow these steps to configure Vault in order to run the application
   $ echo 'path "database/creds/ci-sample" {
     capabilities = ["read"]
   }
-  path "database/creds/ci-sample/*" {
-      capabilities = ["create", "update"]
-    }' | vault policy write read-mongo-credential -
+  path "sys/leases/renew/ci-sample/*" {
+  	capabilities = ["update"]
+  }' | vault policy write read-mongo-credential -
   Success! Uploaded policy: read-mongo-credential
   ```
   In this case, tokens assigned to the `read-mongo-credential` policy would have permission to generate a new credential by reading from the `/creds` endpoint with the name of the role.
