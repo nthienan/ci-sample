@@ -1,4 +1,4 @@
-CI Sample Application
+# CI Sample Application
 
 Scenario 4: New applications that use dynamic credentials
 
