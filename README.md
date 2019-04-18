@@ -64,14 +64,14 @@ Follow these steps to configure Vault in order to run the application
 - Create an app role named `ci-sample-dynamic-credentail`:
   ```bash
   $ vault write auth/approle/role/ci-sample-dynamic-credential \
-  	secret_id_ttl=20m \
-  	token_ttl=15m \
-  	token_max_ttl=120m \
+  	secret_id_ttl=5m \
+  	period=15m \
   	policies="read-mongo-credential"
   Success! Data written to: auth/approle/role/ci-sample-dynamic-credential
   ```
-  This step, we have created a AppRole that will generate tokens associated with policy `read-mongo-credential`.
-  Tokens generated through this role have a time-to-live of 15 minutes. That means that after 15 minutes, that tokens are expired and can’t be used anymore.
+  This step, we have created a AppRole that will generate periodic tokens associated with policy `read-mongo-credential`.
+  It probably makes sense to create AppRole periodic tokens since we are talking about long-running apps that need to be able to renew their token indefinitely.   
+  Periodic tokens have a TTL, but no max TTL; therefore, they may live for an infinite duration of time so long as they are renewed within their TTL. This is useful for long-running services that cannot handle regenerating a token
 
 - Create policy for the application to pull role-id and secret-id:
   Now the application will need permissions to retrieve role-id and secret-id for our newly created role.
@@ -87,17 +87,12 @@ Follow these steps to configure Vault in order to run the application
   
 - Generate a token for the application to login into Vault. This token should have a relatively large TTL
   ```bash
-  $ vault token create -policy=ci-sample-dynamic-credential -ttl=8760h 
-  WARNING! The following warnings were returned from Vault:
-  
-    * TTL of "8760h0m0s" exceeded the effective max_ttl of "768h0m0s"; TTL value
-    is capped accordingly
-  
+  $ vault token create -policy=ci-sample-dynamic-credential -period="2h"  
   Key                  Value
   ---                  -----
-  token                s.KMSBsX4zM1YhpWB4FUcCwtFa
-  token_accessor       gK6Qy1VgiRx2gp2gPRvm3KFu
-  token_duration       768h
+  token                s.RqVbX1wsra8weeX9cYLtSd39
+  token_accessor       heWIYcWuqA55dieU7FlGWEKz
+  token_duration       2h
   token_renewable      true
   token_policies       ["ci-sample-dynamic-credential" "default"]
   identity_policies    []
@@ -109,5 +104,5 @@ Follow these steps to configure Vault in order to run the application
   ...
   vault.uri=http://vault.nthienan.com
   vault.app-role.name=ci-sample-dynamic-credential
-  vault.token=s.KMSBsX4zM1YhpWB4FUcCwtFa # token here
+  vault.token=s.RqVbX1wsra8weeX9cYLtSd39 # token here
   ```
