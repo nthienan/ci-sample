@@ -1,4 +1,10 @@
-# Sample project for Vault's demo
+# CI Sample Application
+
+Scenario 3: New applications that use static credentials
+
+![New applications that use static credentials](docs/scenario-3-vault-static-credential.png)
+
+### Configure Vault policies
 Follow these steps in order to configure Vault before running the application
 
 - Login to vault with a user has permissions to create roles and policies.   
