@@ -15,6 +15,10 @@ spec:
       containers:
         - name: k8s-vault-sample-app
           image: APPLICATION_IMAGE
+          ports:
+          - name: http
+            containerPort: 8080
+            protocol: TCP
           volumeMounts:
             - name: vault-token
               mountPath: /var/run/secrets/boostport.com
