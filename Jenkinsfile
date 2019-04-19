@@ -31,9 +31,9 @@ pipeline {
         container('docker') {
           unstash 'app'
           script {
-            def image = docker.build("nthienan/ci-sample:${env.BUILD_NUMBER}-vault")
+            def image = docker.build("nthienan/ci-sample:scenario3-${env.BUILD_NUMBER}")
             docker.withRegistry( '', 'nthienan_dockerhub') {
-              image.push "${env.BUILD_NUMBER}-vault"
+              image.push "scenario3-${env.BUILD_NUMBER}"
             }
           }
         }
@@ -50,7 +50,7 @@ pipeline {
               aws_server.allowAnyHosts = true
               aws_server.user = USERNAME
               aws_server.password = PASSWORD
-              sshCommand remote: aws_server, command: "docker rm -f ci-sample || true && docker run -d --name ci-sample -p 80:8080 nthienan/ci-sample:${env.BUILD_NUMBER}-vault"
+              sshCommand remote: aws_server, command: "docker rm -f scenario-3 || true && docker run -d --name ci-sample -p 8083:8080 nthienan/ci-sample:scenario3-${env.BUILD_NUMBER}"
             }
           }
         }
