@@ -28,9 +28,9 @@ pipeline {
         container('docker') {
           unstash 'app'
           script {
-            def image = docker.build("nthienan/ci-sample:${env.BUILD_NUMBER}-k8s")
+            def image = docker.build("nthienan/ci-sample:scenario2-${env.BUILD_NUMBER}")
             docker.withRegistry( '', 'nthienan_dockerhub') {
-              image.push "${env.BUILD_NUMBER}-k8s"
+              image.push "scenario2-${env.BUILD_NUMBER}"
             }
           }
         }
@@ -41,7 +41,7 @@ pipeline {
         container('alpine') {
           sh """
             deployment_file="./deployment.yaml"
-            sed -i -e 's,APPLICATION_IMAGE,'nthienan/ci-sample:${env.BUILD_NUMBER}-k8s',g' \$deployment_file
+            sed -i -e 's,APPLICATION_IMAGE,'nthienan/ci-sample:scenario2-${env.BUILD_NUMBER}',g' \$deployment_file
             cat \$deployment_file
           """
           stash includes: 'deployment.yaml', name: 'deployment_config'
