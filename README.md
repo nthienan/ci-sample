@@ -64,7 +64,7 @@ Follow these steps to configure Vault in order to run the application
 - Create an app role named `ci-sample-dynamic-credentail`:
   ```bash
   $ vault write auth/approle/role/ci-sample-dynamic-credential \
-  	secret_id_ttl=5m \
+  	secret_id_ttl=90s \
   	period=15m \
   	policies="read-mongo-credential"
   Success! Data written to: auth/approle/role/ci-sample-dynamic-credential
@@ -87,7 +87,7 @@ Follow these steps to configure Vault in order to run the application
   
 - Generate a token for the application to login into Vault. This token should have a relatively large TTL
   ```bash
-  $ vault token create -policy=ci-sample-dynamic-credential -period="2h"  
+  $ vault token create -policy=ci-sample-dynamic-credential -period="744h"  
   Key                  Value
   ---                  -----
   token                s.RqVbX1wsra8weeX9cYLtSd39
