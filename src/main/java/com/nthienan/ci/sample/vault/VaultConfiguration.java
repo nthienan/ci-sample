@@ -1,27 +1,37 @@
 package com.nthienan.ci.sample.vault;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.vault.authentication.AppRoleAuthentication;
-import org.springframework.vault.authentication.AppRoleAuthenticationOptions;
 import org.springframework.vault.authentication.ClientAuthentication;
+import org.springframework.vault.authentication.TokenAuthentication;
 import org.springframework.vault.client.VaultEndpoint;
 import org.springframework.vault.config.AbstractVaultConfiguration;
-import org.springframework.vault.support.VaultToken;
 
+import javax.annotation.PostConstruct;
+import java.io.File;
+import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Map;
 
 @Configuration
 public class VaultConfiguration extends AbstractVaultConfiguration {
 
-    @Value("${vault.uri}")
+    @Value("${vault.token-file}")
+    private String tokenFilePath;
+
     private URI vaultUri;
-
-    @Value("${vault.app-role.name}")
-    private String roleName;
-
-    @Value("${vault.token}")
     private String vaultToken;
+
+    @PostConstruct
+    protected void init() throws IOException, URISyntaxException {
+        File tokenFile = new File(tokenFilePath);
+        Map<String, String> vaultInfo = new ObjectMapper().readValue(tokenFile, new TypeReference<Map<String, String>>() {});
+        vaultUri = new URI(vaultInfo.get("vaultAddr"));
+        vaultToken = vaultInfo.get("clientToken");
+    }
 
     @Override
     public VaultEndpoint vaultEndpoint() {
@@ -30,13 +40,6 @@ public class VaultConfiguration extends AbstractVaultConfiguration {
 
     @Override
     public ClientAuthentication clientAuthentication() {
-        VaultToken token = VaultToken.of(vaultToken);
-        AppRoleAuthenticationOptions options = AppRoleAuthenticationOptions.builder()
-            .appRole(roleName)
-            .roleId(AppRoleAuthenticationOptions.RoleId.pull(token))
-            .secretId(AppRoleAuthenticationOptions.SecretId.pull(token))
-            .build();
-
-        return new AppRoleAuthentication(options, restOperations());
+        return new TokenAuthentication(vaultToken);
     }
 }

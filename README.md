@@ -1,13 +1,13 @@
 # CI Sample Application
 
-Scenario 4: New applications that use dynamic credentials
+Scenario 2: Applications run on Kubernetes
 
-![New applications that use dynamic credentials](docs/scenario-4-vault-dynamic-credential.png)
+![Applications run on Kubernetes](docs/scenario-2-vault-k8s.png)
 
 ### Configure Vault policies
 Follow these steps to configure Vault in order to run the application
 
-- Login to vault with a user has permissions to create roles and policies.   
+- Login to vault with a user has proper permissions.   
   ```bash
   $ vault login -method=userpass username=nthienan
   Password (will be hidden): <enter password here>
@@ -22,87 +22,70 @@ Follow these steps to configure Vault in order to run the application
   policies               ["admin" "default"]
   token_meta_username    nthienan
   ``` 
-
-- Enable the database secrets engine if it is not already enabled:
+- Create an app role for the application that generates a periodic 6 hour token:
   ```bash
-  $ vault secrets enable database
-  Success! Enabled the database secrets engine at: database/
+  $ vault write auth/approle/role/k8s-vault-app \
+      secret_id_ttl=90s \
+      secret_id_num_uses=1 \
+      period=15m \
+      policies="read-mongo-credential"
+  Success! Data written to: auth/approle/role/k8s-vault-app
   ```
-  
-- Configure Vault with the proper plugin and connection information:
+- Modify `kubernetes-vault` policy for adding new rule in order to read secret id of `k8s-vault-app` role
+  * Read existing rules from the policy:
+    ```bash
+    $ vault policy read kubernetes-vault
+    path "intermediate-ca/issue/kubernetes-vault" {
+      capabilities = ["update"]
+    }
+    path "auth/token/roles/kubernetes-vault" {
+      capabilities = ["read"]
+    }
+    ```
+  * Append a new rule to `kubernets-vault` policy:
+    ```bash
+    $ echo '
+    path "intermediate-ca/issue/kubernetes-vault" {
+      capabilities = ["update"]
+    }
+    path "auth/token/roles/kubernetes-vault" {
+      capabilities = ["read"]
+    }
+    path "auth/approle/role/k8s-vault-app/secret-id" {
+      capabilities = ["update"]
+    }' | vault policy write kubernetes-vault -
+    Success! Uploaded policy: kubernetes-vault
+    ```
+- Get the app's role id:
   ```bash
-  $ vault write database/config/mongodb-server-1 \
-      plugin_name=mongodb-database-plugin \
-      allowed_roles="ci-sample" \
-      connection_url="mongodb://{{username}}:{{password}}@mongo.nthienan.com:27017/admin?ssl=false" \
-      username="mongo_root" \
-      password="123456"
-  ```
-
-- Configure a database role that maps a name in Vault to a MongoDB command that executes and creates the database credential:
-  ```bash
-  $ vault write database/roles/ci-sample \
-      db_name=mongodb-server-1 \
-      creation_statements='{ "db": "admin", "roles": [{ "role": "readWrite" }, {"role": "read", "db": "blog"}] }' \
-      default_ttl="1h" \
-      max_ttl="8760h"
-  Success! Data written to: database/roles/ci-sample
-  ```
-
-- Create a policy named `read-mongo-credential`:
-  ```bash
-  $ echo 'path "database/creds/ci-sample" {
-    capabilities = ["read"]
-  }
-  path "sys/leases/renew/ci-sample/*" {
-  	capabilities = ["update"]
-  }' | vault policy write read-mongo-credential -
-  Success! Uploaded policy: read-mongo-credential
-  ```
-  In this case, tokens assigned to the `read-mongo-credential` policy would have permission to generate a new credential by reading from the `/creds` endpoint with the name of the role.
-  
-- Create an app role named `ci-sample-dynamic-credentail`:
-  ```bash
-  $ vault write auth/approle/role/ci-sample-dynamic-credential \
-  	secret_id_ttl=5m \
-  	period=15m \
-  	policies="read-mongo-credential"
-  Success! Data written to: auth/approle/role/ci-sample-dynamic-credential
-  ```
-  This step, we have created a AppRole that will generate periodic tokens associated with policy `read-mongo-credential`.
-  It probably makes sense to create AppRole periodic tokens since we are talking about long-running apps that need to be able to renew their token indefinitely.   
-  Periodic tokens have a TTL, but no max TTL; therefore, they may live for an infinite duration of time so long as they are renewed within their TTL. This is useful for long-running services that cannot handle regenerating a token
-
-- Create policy for the application to pull role-id and secret-id:
-  Now the application will need permissions to retrieve role-id and secret-id for our newly created role.
-  ```bash
-  $ echo 'path "auth/approle/role/ci-sample-dynamic-credential/role-id" {
-    capabilities = ["read"]
-  }
-  path "auth/approle/role/ci-sample-dynamic-credential/secret-id" {
-    capabilities = ["read","create","update"]
-  }' | vault policy write ci-sample-dynamic-credential -
-  Success! Uploaded policy: ci-sample-dynamic-credential
-  ```
-  
-- Generate a token for the application to login into Vault. This token should have a relatively large TTL
-  ```bash
-  $ vault token create -policy=ci-sample-dynamic-credential -period="2h"  
-  Key                  Value
-  ---                  -----
-  token                s.RqVbX1wsra8weeX9cYLtSd39
-  token_accessor       heWIYcWuqA55dieU7FlGWEKz
-  token_duration       2h
-  token_renewable      true
-  token_policies       ["ci-sample-dynamic-credential" "default"]
-  identity_policies    []
-  policies             ["ci-sample-dynamic-credential" "default"]
+  $ vault read auth/approle/role/k8s-vault-app/role-id
+  Key        Value
+  ---        -----
+  role_id    bcdb5a5a-bae6-fbdd-6d07-1d5d475fe148
   ```
 
-- Copy newly created token and store it into [src/main/resources/application.properties](src/main/resources/application.properties)
-  ```properties
-  ...
-  vault.uri=http://vault.nthienan.com
-  vault.app-role.name=ci-sample-dynamic-credential
-  vault.token=s.RqVbX1wsra8weeX9cYLtSd39 # token here
-  ```
+### Appendix
+
+#### Generating Kubernetes credentials
+     
+The following example describes how you could use the token of a ServiceAccount to access the Kubernetes cluster from Jenkins
+```bash
+# Create a ServiceAccount named `jenkins-bot` in a given namespace.
+$ kubectl -n <namespace> create serviceaccount jenkins-bot
+serviceaccount/jenkins-bot created
+
+# The next line gives `jenkins-bot` administator permissions for this namespace.
+# * You can make it an admin over all namespaces by creating a `ClusterRoleBinding` instead of a `RoleBinding`.
+# * You can also give it different permissions by binding it to a different `(Cluster)Role`.
+$ kubectl -n <namespace> create rolebinding jenkins-bot-binding --clusterrole=cluster-admin --serviceaccount=<namespace>:jenkins-bot
+rolebinding.rbac.authorization.k8s.io/jenkins-bot-binding created
+
+# Get the name of the token that was automatically generated for the ServiceAccount `jenkins-bot`.
+$ kubectl -n <namespace> get serviceaccount jenkins-bot -o go-template --template='{{range .secrets}}{{.name}}{{"\n"}}{{end}}'
+jenkins-bot-token-68x9t
+
+# Retrieve the token and decode it using base64.
+$ kubectl -n <namespace> get secrets jenkins-bot-token-68x9t -o go-template --template '{{index .data "token"}}' | base64 -d
+eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9[...]
+```
+On Jenkins, navigate in the folder you want to add the token in, or go on the main page. Then click on the `Credentials` item in the left menu and find or create the `Domain` you want. Finally, paste your token into a Secret text credential. The ID is the credentialsId you need to use in Jenkinsfile.
