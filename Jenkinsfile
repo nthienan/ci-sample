@@ -50,7 +50,7 @@ pipeline {
               aws_server.allowAnyHosts = true
               aws_server.user = USERNAME
               aws_server.password = PASSWORD
-              sshCommand remote: aws_server, command: "docker rm -f scenario-3 || true && docker run -d --name ci-sample -p 8083:8080 nthienan/ci-sample:scenario3-${env.BUILD_NUMBER}"
+              sshCommand remote: aws_server, command: "docker rm -f scenario-3 || true && docker run -d --name scenario-3 -p 8083:8080 nthienan/ci-sample:scenario3-${env.BUILD_NUMBER}"
             }
           }
         }
