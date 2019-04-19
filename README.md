@@ -60,8 +60,6 @@ WARNING! The following warnings were returned from Vault:
   * TTL of "8760h0m0s" exceeded the effective max_ttl of "768h0m0s"; TTL value
   is capped accordingly
 
-  * Policy "jenkins" does not exist
-
 Key                  Value
 ---                  -----
 token                s.mC73IMlyVYj79z7XhhRk5zh6
