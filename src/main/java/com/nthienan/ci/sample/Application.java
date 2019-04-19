@@ -19,7 +19,7 @@ public class Application {
 
     @RequestMapping("/")
     public String home() {
-        return "Hello! How are you?";
+        return "Scenario 4: New applications that use dynamic credential";
     }
 
     @RequestMapping("/posts")
