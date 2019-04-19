@@ -73,7 +73,7 @@ pipeline {
               aws_server.password = PASSWORD
               sshRemove remote: aws_server, path: "./application.properties", failOnError: false
               sshPut remote: aws_server, from: './application.properties', into: '/home/ubuntu/application.properties'
-              sshCommand remote: aws_server, command: "docker rm -f scenario-1 || true && docker run -d --name ci-sample -p 8081:8080 -v /home/ubuntu/application.properties:/tmp/application.properties -e OPTS='--spring.config.location=file:/tmp/application.properties' nthienan/ci-sample:scenario1-${env.BUILD_NUMBER}"
+              sshCommand remote: aws_server, command: "docker rm -f scenario-1 || true && docker run -d --name scenario-1 -p 8081:8080 -v /home/ubuntu/application.properties:/tmp/application.properties -e OPTS='--spring.config.location=file:/tmp/application.properties' nthienan/ci-sample:scenario1-${env.BUILD_NUMBER}"
             }
           }
         }
