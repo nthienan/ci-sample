@@ -19,7 +19,7 @@ public class Application {
 
     @RequestMapping("/")
     public String home() {
-        return "Hello! How are you?";
+        return "Scenario 1: Legacy applications that don’t run on k8s";
     }
 
     @RequestMapping("/posts")

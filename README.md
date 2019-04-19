@@ -26,9 +26,10 @@ In this case, tokens assigned to the `team-a-readonly` policy would have permiss
 Now we have to create a role that will generate tokens associated with policy `team-a-readonly`
 ```bash
 $ vault write auth/approle/role/team-a \
-	secret_id_ttl=60m \
-	token_ttl=15m \
-	token_max_ttl=120m \
+	secret_id_ttl=90s \
+	secret_id_num_uses=1 \
+	token_ttl=5m \
+	token_max_ttl=30m \
 	policies="team-a-readonly"
 ```
 Read role id and take it down for later steps
@@ -38,7 +39,7 @@ Key        Value
 ---        -----
 role_id    84092a58-fcfb-ea53-a13e-628bd43bc966
 ```
-Note that in this case, the tokens generated through this role have a time-to-live of 15 minutes. That means that after 15 minutes, that token is expired and can’t be used anymore. If your Jenkins jobs are shorted, you can adjust that time to live to increase security.
+Note that in this case, the tokens generated through this role have a time-to-live of 5 minutes. That means that after 5 minutes, that token is expired and can’t be used anymore. If your Jenkins jobs are shorted, you can adjust that time to live to increase security.
 
 Let’s write secrets that our Jenkins job will consume:
 ```bash
