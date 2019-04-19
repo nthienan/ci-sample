@@ -17,7 +17,7 @@ spec:
           image: APPLICATION_IMAGE
           volumeMounts:
             - name: vault-token
-              mountPath: /var/run/secrets/vault
+              mountPath: /var/run/secrets/boostport.com
       initContainers:
         - name: get-vault-token
           image: boostport/kubernetes-vault-init:v0.6.1
@@ -26,7 +26,7 @@ spec:
               value: bcdb5a5a-bae6-fbdd-6d07-1d5d475fe148
           volumeMounts:
             - name: vault-token
-              mountPath: /var/run/secrets/vault
+              mountPath: /var/run/secrets/boostport.com
       volumes:
         - name: vault-token
           emptyDir: {}
