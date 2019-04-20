@@ -48,7 +48,7 @@ pipeline {
         }
         container('kubectl') {
           unstash 'deployment_config'
-          withKubeConfig([credentialsId: 'k8s_token', serverUrl: 'https://35.240.212.207']) {
+          withKubeConfig([credentialsId: 'k8s_token', serverUrl: 'https://35.247.161.154']) {
             sh """
               kubectl apply -f deployment.yaml
             """
