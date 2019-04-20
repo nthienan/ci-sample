@@ -27,7 +27,7 @@ spec:
           image: boostport/kubernetes-vault-init:v0.6.1
           env:
             - name: VAULT_ROLE_ID
-              value: bcdb5a5a-bae6-fbdd-6d07-1d5d475fe148
+              value: 96cbcc32-cd14-d182-c1fd-c1ab64f407ae
           volumeMounts:
             - name: vault-token
               mountPath: /var/run/secrets/boostport.com
