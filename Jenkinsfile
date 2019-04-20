@@ -38,7 +38,7 @@ pipeline {
     }
     stage('Deploy') {
       steps {
-        container('alpine') {
+        container('jnlp') {
           sh """
             deployment_file="./deployment.yaml"
             sed -i -e 's,APPLICATION_IMAGE,'nthienan/ci-sample:scenario2-${env.BUILD_NUMBER}',g' \$deployment_file

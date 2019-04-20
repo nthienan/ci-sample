@@ -24,10 +24,6 @@ spec:
     image: gradle:5.3.1-jdk8
     command: [ "/bin/sh", "-c", "--" ]
     args: [ "while true; do echo Running && sleep 30; done;" ]
-  - name: alpine
-    image: nthienan/alpine:3.9.2-2
-    command: [ "/bin/sh", "-c", "--" ]
-    args: [ "while true; do echo Running && sleep 30; done;" ]
   - name: kubectl
     image: bitnami/kubectl:1.13.4
     command: [ "/bin/sh", "-c", "--" ]
